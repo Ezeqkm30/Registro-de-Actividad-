@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro de Predicación Anual</title>
+  <style>
+    :root {
+      --primary-color: #1a365d;
+      --secondary-color: #2b6cb0;
+      --bg-color: #f4f6f9;
+      --card-bg: #ffffff;
+      --text-color: #333333;
+      --border-color: #cbd5e0;
+      --success-color: #2f855a;
+      --success-bg: #f0fff4;
+      --danger-color: #c53030;
+      --danger-bg: #fff5f5;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 10px;
+      padding: 0;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
+    h1 {
+      text-align: center;
+      color: var(--primary-color);
+      font-size: 1.4rem;
+      margin-bottom: 15px;
+    }
+    .card {
+      background: var(--card-bg);
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      color: var(--secondary-color);
+    }
+    .resumen-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .stat-box {
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+      border: 1px solid var(--border-color);
+      background-color: #f7fafc;
+    }
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin-top: 4px;
+      color: var(--secondary-color);
+    }
+    .selector-container {
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    select#select-mes-stat {
+      padding: 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      font-weight: bold;
+      flex-grow: 1;
+    }
+    .mes-stat-box {
+      padding: 12px;
+      border-radius: 6px;
+      text-align: center;
+      border: 1px solid var(--border-color);
+    }
+    .mes-stat-box.status-ok {
+      background-color: var(--success-bg);
+      border-color: var(--success-color);
+      color: var(--success-color);
+    }
+    .mes-stat-box.status-alert {
+      background-color: var(--danger-bg);
+      border-color: var(--danger-color);
+      color: var(--danger-color);
+    }
+    .table-container {
+      overflow-x: auto;
+      max-width: 100%;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 8px;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+    th {
+      background-color: var(--secondary-color);
+      color: white;
+      white-space: nowrap;
+    }
+    .row-label {
+      text-align: left;
+      font-weight: bold;
+      background-color: #f7fafc;
+      white-space: nowrap;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    input[type="number"] {
+      width: 50px;
+      text-align: center;
+      padding: 6px 4px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+    }
+    input[type="text"] {
+      width: 100%;
+      min-width: 120px;
+      box-sizing: border-box;
+      padding: 6px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+    button.btn-ctrl {
+      background-color: #e2e8f0;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      cursor: pointer;
+      padding: 4px 8px;
+      font-weight: bold;
+    }
+    button.btn-ctrl:active {
+      background-color: #cbd5e0;
+    }
+    .total-column {
+      background-color: #edf2f7;
+      font-weight: bold;
+    }
+    .footer-info {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #718096;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Registro de Predicación Anual  📖 </h1>
+  
+  <!-- Sección de Resumen Anual -->
+  <div class="card">
+    <h2>Resumen Anual (Meta: 600 hrs)  📊 </h2>
+    <div class="resumen-grid">
+      <div class="stat-box">
+        <div>Total Horas Acumuladas en el Año</div>
+        <div class="stat-value" id="total-horas-anio">0 / 600 hrs</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección de Estadística Mensual Detallada -->
+  <div class="card">
+    <h2>Estadística Mensual (Meta: 50 hrs/mes)  📅 </h2>
+    <div class="selector-container">
+      <label for="select-mes-stat">Seleccionar mes:</label>
+      <select id="select-mes-stat" onchange="actualizarEstadisticaMes()">
+        <!-- Opciones generadas por JS -->
+      </select>
+    </div>
+    <div class="mes-stat-box" id="caja-estado-mes">
+      <div id="texto-estado-mes">Selecciona un mes para ver tu progreso.</div>
+    </div>
+  </div>
+
+  <!-- Sección de la Tabla Anual -->
+  <div class="card">
+    <h2>Tabla de Actividad (Sep - Ago)  🗓️ </h2>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Mes</th>
+            <th>⏱️ Horas</th>
+            <th>📖 Cursos Bíblicos</th>
+            <th>Servicio Sagrado</th>
+            <th>📝 Observaciones</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-cuerpo">
+          <!-- Las filas se generan con JavaScript -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer-info">
+    Año de servicio: Septiembre a Agosto<br>
+    <small>✅ Cambios guardados automáticamente</small>
+  </div>
+
+  <script>
+    const meses = [
+      { id: 'sep', nombre: 'Septiembre' },
+      { id: 'oct', nombre: 'Octubre' },
+      { id: 'nov', nombre: 'Noviembre' },
+      { id: 'dic', nombre: 'Diciembre' },
+      { id: 'ene', nombre: 'Enero' },
+      { id: 'feb', nombre: 'Febrero' },
+      { id: 'mar', nombre: 'Marzo' },
+      { id: 'abr', nombre: 'Abril' },
+      { id: 'may', nombre: 'Mayo' },
+      { id: 'jun', nombre: 'Junio' },
+      { id: 'jul', nombre: 'Julio' },
+      { id: 'ago', nombre: 'Agosto' }
+    ];
+
+    let datos = JSON.parse(localStorage.getItem('predicacionAnualDatos')) || {};
+    
+    meses.forEach(m => {
+      if (!datos[m.id]) {
+        datos[m.id] = { horas: 0, cursos: 0, servicio: 0, observaciones: '' };
+      }
+    });
+
+    function inicializarSelector() {
+      const select = document.getElementById('select-mes-stat');
+      select.innerHTML = '';
+      meses.forEach(m => {
+        let opt = document.createElement('option');
+        opt.value = m.id;
+        opt.innerText = m.nombre;
+        select.appendChild(opt);
+      });
+    }
+
+    function cambiarValor(mesId, campo, delta) {
+      datos[mesId][campo] = Math.max(0, parseFloat(datos[mesId][campo]) + delta);
+      document.getElementById(`input-${campo}-${mesId}`).value = datos[mesId][campo];
+      guardarYRecalcular();
+    }
+
+    function actualizarInput(mesId, campo, valor) {
+      let num = parseFloat(valor);
+      datos[mesId][campo] = isNaN(num) ? 0 : Math.max(0, num);
+      guardarYRecalcular();
+    }
+
+    function actualizarTexto(mesId, valor) {
+      datos[mesId].observaciones = valor;
+      localStorage.setItem('predicacionAnualDatos', JSON.stringify(datos));
+    }
+
+    function guardarYRecalcular() {
+      localStorage.setItem('predicacionAnualDatos', JSON.stringify(datos));
+      actualizarTotalesEnDOM();
+      calcularMetasAnuales();
+      actualizarEstadisticaMes();
+    }
+
+    function renderizarTablaInicial() {
+      const tbody = document.getElementById('tabla-cuerpo');
+      let html = '';
+
+      meses.forEach(m => {
+        html += `<tr>
+          <td class="row-label">${m.nombre}</td>
+          <td>
+            <div class="control-group">
+              <button class="btn-ctrl" onclick="cambiarValor('${m.id}', 'horas', -1)">➖</button>
+              <input type="number" id="input-horas-${m.id}" min="0" step="1" value="${datos[m.id].horas}" oninput="actualizarInput('${m.id}', 'horas', this.value)">
+              <button class="btn-ctrl" onclick="cambiarValor('${m.id}', 'horas', 1)">➕</button>
+            </div>
+          </td>
+          <td>
+            <div class="control-group">
+              <button class="btn-ctrl" onclick="cambiarValor('${m.id}', 'cursos', -1)">➖</button>
+              <input type="number" id="input-cursos-${m.id}" min="0" step="1" value="${datos[m.id].cursos}" oninput="actualizarInput('${m.id}', 'cursos', this.value)">
+              <button class="btn-ctrl" onclick="cambiarValor('${m.id}', 'cursos', 1)">➕</button>
+            </div>
+          </td>
+          <td>
+            <div class="control-group">
+              <button class="btn-ctrl" onclick="cambiarValor('${m.id}', 'servicio', -1)">➖</button>
+              <input type="number" id="input-servicio-${m.id}" min="0" step="1" value="${datos[m.id].servicio}" oninput="actualizarInput('${m.id}', 'servicio', this.value)">
+              <button class="btn-ctrl" onclick="cambiarValor('${m.id}', 'servicio', 1)">➕</button>
+            </div>
+          </td>
+          <td>
+            <input type="text" value="${datos[m.id].observaciones}" placeholder="Nota..." oninput="actualizarTexto('${m.id}', this.value)">
+          </td>
+        </tr>`;
+      });
+
+      html += `<tr class="total-column">
+        <td class="row-label">Totales / Prom</td>
+        <td id="total-horas-tabla">0</td>
+        <td id="total-cursos-tabla">0</td>
+        <td id="total-servicio-tabla">0</td>
+        <td>-</td>
+      </tr>`;
+
+      tbody.innerHTML = html;
+    }
+
+    function actualizarTotalesEnDOM() {
+      let totalHoras = meses.reduce((sum, m) => sum + (parseFloat(datos[m.id].horas) || 0), 0);
+      let totalCursos = meses.reduce((sum, m) => sum + (parseFloat(datos[m.id].cursos) || 0), 0);
+      let promedioCursos = (totalCursos / 12).toFixed(1);
+      let totalServicio = meses.reduce((sum, m) => sum + (parseFloat(datos[m.id].servicio) || 0), 0);
+
+      document.getElementById('total-horas-tabla').innerHTML = `<strong>${totalHoras}</strong>`;
+      document.getElementById('total-cursos-tabla').innerHTML = `Prom: ${promedioCursos}<br><small>(Tot: ${totalCursos})</small>`;
+      document.getElementById('total-servicio-tabla').innerHTML = `<strong>${totalServicio}</strong>`;
+    }
+
+    function calcularMetasAnuales() {
+      let totalHoras = meses.reduce((sum, m) => sum + (parseFloat(datos[m.id].horas) || 0), 0);
+      document.getElementById('total-horas-anio').innerText = `${totalHoras} / 600 hrs`;
+    }
+
+    function actualizarEstadisticaMes() {
+      const select = document.getElementById('select-mes-stat');
+      const mesId = select.value;
+      const mesObj = meses.find(m => m.id === mesId);
+      const horasMes = parseFloat(datos[mesId].horas) || 0;
+      const metaMes = 50;
+      
+      const caja = document.getElementById('caja-estado-mes');
+      const texto = document.getElementById('texto-estado-mes');
+
+      if (horasMes >= metaMes) {
+        caja.className = 'mes-stat-box status-ok';
+        texto.innerHTML = ` 🎉  <strong>${mesObj.nombre}</strong>: ¡Meta cumplida con ${horasMes} horas! (Objetivo: 50 hrs)`;
+      } else {
+        let faltan = metaMes - horasMes;
+        caja.className = 'mes-stat-box status-alert';
+        texto.innerHTML = ` ⚠️  <strong>${mesObj.nombre}</strong>: Llevas ${horasMes} horas. Te faltan <strong>${faltan} horas</strong> para llegar a las 50 de este mes.`;
+      }
+    }
+
+    inicializarSelector();
+    renderizarTablaInicial();
+    actualizarTotalesEnDOM();
+    calcularMetasAnuales();
+    actualizarEstadisticaMes();
+  </script>
+</body>
+</html>
